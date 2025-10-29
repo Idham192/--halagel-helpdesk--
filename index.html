@@ -49,15 +49,16 @@
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .btn-admin, .btn-logout {
-            padding: 8px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.3s;
         }
 
@@ -90,6 +91,10 @@
             font-weight: 600;
             cursor: pointer;
             text-decoration: underline;
+        }
+
+        .admin-link:hover {
+            color: #1a5c2a;
         }
 
         .stats-grid {
@@ -141,9 +146,6 @@
             color: #2d7a3e;
             margin-bottom: 20px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .form-group {
@@ -193,10 +195,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
         .btn-submit:hover {
@@ -220,9 +218,6 @@
             color: #2d7a3e;
             margin-bottom: 20px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .no-tickets {
@@ -281,7 +276,7 @@
             background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
         }
 
-        .status-progress {
+        .status-inprogress {
             background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
         }
 
@@ -408,7 +403,7 @@
         }
 
         .modal.show {
-            display: flex;
+            display: flex !important;
         }
 
         .modal-content {
@@ -418,6 +413,8 @@
             max-width: 400px;
             width: 100%;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-close {
@@ -429,6 +426,11 @@
             color: #999;
             background: none;
             border: none;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
         }
 
         .modal-icon {
@@ -454,6 +456,11 @@
             margin-bottom: 10px;
         }
 
+        .modal-input:focus {
+            outline: none;
+            border-color: #2d7a3e;
+        }
+
         .modal-hint {
             font-size: 12px;
             color: #999;
@@ -470,6 +477,15 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+
+        .modal-btn.danger {
+            background: #dc3545;
         }
 
         .admin-badge {
@@ -483,8 +499,47 @@
             margin-bottom: 20px;
         }
 
-        .hidden {
+        .logo-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 15px auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #2d7a3e;
+            background: white;
+            color: #2d7a3e;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #2d7a3e;
+            color: white;
+        }
+
+        .tab-content {
             display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 480px) {
@@ -498,7 +553,8 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" class="logo">
+            <img id="logoImage" src="" alt="Company Logo" class="logo" style="display: none;">
+            <svg id="defaultLogo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" class="logo">
                 <ellipse cx="160" cy="70" rx="150" ry="65" fill="#6b8e23"/>
                 <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-family="Arial" font-size="45" font-weight="bold">HALAGEL</text>
                 <circle cx="280" cy="35" r="18" fill="none" stroke="#fff" stroke-width="3"/>
@@ -507,12 +563,13 @@
             <h1>Helpdesk Ticketing System</h1>
             
             <div id="loginLink" class="admin-text">
-                IT Admin? <span class="admin-link" onclick="showLoginModal()">Login here</span>
+                IT Admin? <span class="admin-link" id="loginButton">Login here</span>
             </div>
             
             <div id="adminButtons" class="header-buttons hidden">
-                <button class="btn-admin" onclick="showSettingsModal()">⚙ Settings</button>
-                <button class="btn-logout" onclick="handleLogout()">🚪 Logout</button>
+                <button class="btn-admin" id="logoButton">🖼️ Logo</button>
+                <button class="btn-admin" id="settingsButton">⚙️ Settings</button>
+                <button class="btn-logout" id="logoutButton">🚪 Logout</button>
             </div>
         </div>
 
@@ -609,9 +666,7 @@
                     <input type="datetime-local" id="preferredTime" class="form-input">
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    🚀 Submit Ticket
-                </button>
+                <button type="submit" class="btn-submit">🚀 Submit Ticket</button>
             </form>
         </div>
 
@@ -630,47 +685,123 @@
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+            <button class="modal-close" id="closeLogin">&times;</button>
             <div class="modal-icon">🔒</div>
             <h2 class="modal-title">Admin Login</h2>
             <input type="password" id="loginPassword" class="modal-input" placeholder="Enter admin password">
             <p class="modal-hint">Default: admin123</p>
-            <button class="modal-btn" onclick="handleLogin()">Login</button>
+            <button class="modal-btn" id="loginSubmit">Login</button>
         </div>
     </div>
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+            <button class="modal-close" id="closeSettings">&times;</button>
             <div class="modal-icon">⚙️</div>
             <h2 class="modal-title">Admin Settings</h2>
+            
+            <label class="form-label">Admin Email for Notifications</label>
+            <input type="email" id="adminEmail" class="modal-input" placeholder="admin@halagel.com">
+            
             <label class="form-label">New Password (min 6 chars)</label>
             <input type="password" id="newPassword" class="modal-input" placeholder="Enter new password">
-            <button class="modal-btn" onclick="saveSettings()">Save Settings</button>
+            
+            <button class="modal-btn" id="saveSettings">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- Logo Modal -->
+    <div id="logoModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeLogo">&times;</button>
+            <div class="modal-icon">🖼️</div>
+            <h2 class="modal-title">Manage Logo</h2>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="urlTabBtn">URL</button>
+                <button class="tab-btn" id="uploadTabBtn">Upload</button>
+            </div>
+
+            <div id="urlTab" class="tab-content active">
+                <label class="form-label">Logo Image URL</label>
+                <input type="text" id="logoUrl" class="modal-input" placeholder="https://example.com/logo.png">
+                <p class="modal-hint">Enter a direct link to your logo image</p>
+            </div>
+
+            <div id="uploadTab" class="tab-content">
+                <label class="form-label">Upload Logo Image</label>
+                <input type="file" id="logoFile" class="modal-input" accept="image/*">
+                <p class="modal-hint">Supported formats: JPG, PNG, SVG, GIF</p>
+            </div>
+
+            <img id="logoPreview" class="logo-preview" style="display: none;">
+            
+            <button class="modal-btn" id="saveLogo">Save Logo</button>
+            <button class="modal-btn danger" id="resetLogo">Reset to Default</button>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/library/d/1mo8pB50dvtehFdQH99TiMN2gJmNYxk1v_6j_1T1Y3q0n9cFnN16NQKAc/10';
         let adminPassword = 'admin123';
+        let adminEmail = '';
+        let customLogoUrl = '';
         let isAdmin = false;
         let tickets = [];
+        let currentTab = 'url';
 
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             checkAdminStatus();
+            loadSettings();
             loadTickets();
             setInterval(loadTickets, 30000);
-            
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Form submission
             document.getElementById('ticketForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 createTicket();
             });
-            
+
+            // Login
+            document.getElementById('loginButton').addEventListener('click', showLoginModal);
+            document.getElementById('closeLogin').addEventListener('click', closeLoginModal);
+            document.getElementById('loginSubmit').addEventListener('click', handleLogin);
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') handleLogin();
             });
-        });
+
+            // Settings
+            document.getElementById('settingsButton').addEventListener('click', showSettingsModal);
+            document.getElementById('closeSettings').addEventListener('click', closeSettingsModal);
+            document.getElementById('saveSettings').addEventListener('click', saveSettings);
+
+            // Logo
+            document.getElementById('logoButton').addEventListener('click', showLogoModal);
+            document.getElementById('closeLogo').addEventListener('click', closeLogoModal);
+            document.getElementById('saveLogo').addEventListener('click', saveLogo);
+            document.getElementById('resetLogo').addEventListener('click', resetLogo);
+            document.getElementById('logoUrl').addEventListener('input', previewLogoUrl);
+            document.getElementById('logoFile').addEventListener('change', previewLogoFile);
+            document.getElementById('urlTabBtn').addEventListener('click', () => switchTab('url'));
+            document.getElementById('uploadTabBtn').addEventListener('click', () => switchTab('upload'));
+
+            // Logout
+            document.getElementById('logoutButton').addEventListener('click', handleLogout);
+
+            // Close modals on background click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+            });
+        }
 
         function checkAdminStatus() {
             const savedStatus = sessionStorage.getItem('halagel-admin-status');
@@ -680,18 +811,48 @@
             }
         }
 
+        function loadSettings() {
+            const savedEmail = localStorage.getItem('halagel-admin-email');
+            const savedPassword = localStorage.getItem('halagel-admin-password');
+            const savedLogo = localStorage.getItem('halagel-custom-logo');
+            
+            if (savedEmail) {
+                adminEmail = savedEmail;
+                document.getElementById('adminEmail').value = savedEmail;
+            }
+            if (savedPassword) adminPassword = savedPassword;
+            if (savedLogo) {
+                customLogoUrl = savedLogo;
+                updateLogo();
+            }
+        }
+
+        function updateLogo() {
+            const logoImage = document.getElementById('logoImage');
+            const defaultLogo = document.getElementById('defaultLogo');
+            
+            if (customLogoUrl) {
+                logoImage.src = customLogoUrl;
+                logoImage.style.display = 'block';
+                defaultLogo.style.display = 'none';
+            } else {
+                logoImage.style.display = 'none';
+                defaultLogo.style.display = 'block';
+            }
+        }
+
         function updateAdminUI() {
             document.getElementById('loginLink').classList.toggle('hidden', isAdmin);
             document.getElementById('adminButtons').classList.toggle('hidden', !isAdmin);
             document.getElementById('adminBadge').classList.toggle('hidden', !isAdmin);
             document.getElementById('statsSection').classList.toggle('hidden', !isAdmin);
-            document.getElementById('ticketsTitle').innerHTML = isAdmin ? '🎫 All Tickets' : '📊 Recent Tickets';
+            document.getElementById('ticketsTitle').textContent = isAdmin ? '🎫 All Tickets' : '📊 Recent Tickets';
         }
 
         function showMessage(text, type) {
             const msgBox = document.getElementById('messageBox');
             msgBox.textContent = text;
-            msgBox.className = `message ${type}`;
+            msgBox.className = 'message ' + type;
             setTimeout(() => msgBox.classList.add('hidden'), 5000);
         }
 
@@ -727,187 +888,15 @@
             const displayTickets = isAdmin ? tickets : tickets.slice(0, 5);
             
             if (displayTickets.length === 0) {
-                container.innerHTML = `
-                    <div class="no-tickets">
-                        <div class="no-tickets-icon">🎫</div>
-                        <p>No tickets yet</p>
-                    </div>
-                `;
+                container.innerHTML = '<div class="no-tickets"><div class="no-tickets-icon">🎫</div><p>No tickets yet</p></div>';
                 return;
             }
             
-            container.innerHTML = displayTickets.map(ticket => `
+            container.innerHTML = displayTickets.map(ticket => {
+                const statusClass = ticket.status.toLowerCase().replace(' ', '');
+                return `
                 <div class="ticket-item ${ticket.priority.toLowerCase()}">
                     <div class="ticket-header">
                         <span class="ticket-id">#${ticket.id}</span>
-                        <span class="ticket-status status-${ticket.status.toLowerCase().replace(' ', '')}">
-                            ${ticket.status}
-                        </span>
+                        <span class="ticket-status status-${statusClass}">${ticket.status}</span>
                     </div>
-                    
-                    <div class="ticket-info">
-                        <div class="ticket-field">
-                            <div class="ticket-field-label">Name</div>
-                            <div class="ticket-field-value">${ticket.fullName}</div>
-                        </div>
-                        <div class="ticket-field">
-                            <div class="ticket-field-label">Department</div>
-                            <div class="ticket-field-value">${ticket.department}</div>
-                        </div>
-                        <div class="ticket-field">
-                            <div class="ticket-field-label">Request</div>
-                            <div class="ticket-field-value">${ticket.requestType}</div>
-                        </div>
-                        <div class="ticket-field">
-                            <div class="ticket-field-label">Priority</div>
-                            <div class="ticket-field-value">${ticket.priority}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="ticket-description">
-                        <div class="ticket-description-label">Description</div>
-                        <div class="ticket-description-text">${ticket.description}</div>
-                    </div>
-                    
-                    <div class="ticket-date">
-                        Submitted: ${new Date(ticket.createdAt).toLocaleString()}
-                    </div>
-                    
-                    ${isAdmin && ticket.status !== 'Completed' ? `
-                        <div class="ticket-actions">
-                            ${ticket.status === 'Waiting' ? `
-                                <button class="btn-action btn-start" onclick="updateStatus(${ticket.id}, 'In Progress')">
-                                    ▶️ Start Working
-                                </button>
-                            ` : ''}
-                            ${ticket.status === 'In Progress' ? `
-                                <button class="btn-action btn-complete" onclick="updateStatus(${ticket.id}, 'Completed')">
-                                    ✅ Mark Complete
-                                </button>
-                            ` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-        }
-
-        async function createTicket() {
-            const ticketData = {
-                email: document.getElementById('email').value,
-                fullName: document.getElementById('fullName').value,
-                department: document.getElementById('department').value,
-                requestType: document.getElementById('requestType').value,
-                priority: document.getElementById('priority').value,
-                description: document.getElementById('description').value,
-                preferredTime: document.getElementById('preferredTime').value,
-                status: 'Waiting',
-                createdAt: new Date().toISOString()
-            };
-
-            try {
-                const formData = new FormData();
-                formData.append('action', 'create');
-                formData.append('data', JSON.stringify(ticketData));
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('ticketForm').reset();
-                    showMessage('✅ Ticket submitted successfully!', 'success');
-                    loadTickets();
-                } else {
-                    showMessage('Failed to submit ticket: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showMessage('Error submitting ticket. Please try again.', 'error');
-            }
-        }
-
-        async function updateStatus(ticketId, newStatus) {
-            if (!isAdmin) {
-                showMessage('Only admin can update status!', 'error');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('action', 'update');
-                formData.append('id', ticketId);
-                formData.append('status', newStatus);
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    showMessage('Ticket updated to ' + newStatus, 'success');
-                    loadTickets();
-                } else {
-                    showMessage('Failed to update ticket', 'error');
-                }
-            } catch (error) {
-                showMessage('Error updating ticket', 'error');
-            }
-        }
-
-        function showLoginModal() {
-            document.getElementById('loginModal').classList.add('show');
-        }
-
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.remove('show');
-            document.getElementById('loginPassword').value = '';
-        }
-
-        function handleLogin() {
-            const password = document.getElementById('loginPassword').value;
-            if (password === adminPassword) {
-                isAdmin = true;
-                sessionStorage.setItem('halagel-admin-status', 'true');
-                updateAdminUI();
-                closeLoginModal();
-                showMessage('✓ Logged in successfully', 'success');
-                loadTickets();
-            } else {
-                showMessage('Incorrect password!', 'error');
-            }
-        }
-
-        function handleLogout() {
-            isAdmin = false;
-            sessionStorage.removeItem('halagel-admin-status');
-            updateAdminUI();
-            showMessage('Logged out', 'success');
-            renderTickets();
-        }
-
-        function showSettingsModal() {
-            document.getElementById('settingsModal').classList.add('show');
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').classList.remove('show');
-            document.getElementById('newPassword').value = '';
-        }
-
-        function saveSettings() {
-            const newPass = document.getElementById('newPassword').value;
-            if (newPass.length >= 6) {
-                adminPassword = newPass;
-                closeSettingsModal();
-                showMessage('Password changed successfully!', 'success');
-            } else {
-                showMessage('Password must be at least 6 characters', 'error');
-            }
-        }
-    </script>
-</body>
-</html>
